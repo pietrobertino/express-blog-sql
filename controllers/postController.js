@@ -86,21 +86,13 @@ const modify = (req, res) => {
 
 const destroy = (req, res) => {
     const id = Number(req.params.id);
-    const post = posts.find(post => post.id === id);
-    if (!post) {
-
-        res.status(404);
-
-        return res.json({
-            status: 404,
-            error: "Not Found",
-            message: "Post not found"
-        })
-    }
-
-    posts.splice(posts.indexOf(post), 1);
-    console.log(posts);
-    res.sendStatus(204);
+    connection.query('SELECT * FROM posts WHERE id = ?', [id], (err, post) => {
+        if (!post) return res.status(404).json({ error: 'Post not found' }); //gestisco il caso in cui si provi a cancellare un post che non esiste
+        connection.query('DELETE FROM posts WHERE id = ?', [id], (err) => {
+            if (err) return res.status(500).json({ error: 'Failed to delete post' });
+            res.sendStatus(204)
+        });
+    })
 }
 
 module.exports = {
